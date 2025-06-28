@@ -2,25 +2,22 @@
 This repository contains code to track shipments from Depot to Nike Clients
 
 
-{
-  "manifest_version": 3,
-  "name": "ServiceNow to SendPro Mapper",
-  "version": "1.0",
-  "description": "Copy fields from ServiceNow and paste into SendPro",
-  "permissions": ["scripting", "activeTab", "tabs"],
-  "action": {
-    "default_popup": "popup.html",
-    "default_title": "Map Fields"
-  },
-  "content_scripts": [
-    {
-      "matches": ["*://*.servicenow.com/*"],
-      "js": ["content.js"]
-    }
-  ],
-  "host_permissions": [
-    "*://*.servicenow.com/*",
-    "*://*.sendpro.pitneybowes.com/*"
-  ]
-}
+// Grab all form fields on the page
+const fields = document.querySelectorAll("input, textarea, select");
+const fieldData = [];
+
+fields.forEach(field => {
+  const label = field.getAttribute("aria-label") || field.name || field.id;
+  if (label && field.value) {
+    fieldData.push({ label, value: field.value });
+  }
+});
+
+// Make it available globally so popup can access it
+window.addEventListener("message", (event) => {
+  if (event.data === "GET_SERVICENOW_FIELDS") {
+    window.postMessage({ type: "SERVICENOW_FIELDS", data: fieldData }, "*");
+  }
+});
+
 
