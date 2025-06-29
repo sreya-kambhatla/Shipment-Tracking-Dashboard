@@ -2,6 +2,7 @@
 This repository contains code to track shipments from Depot to Nike Clients
 
     
+I'll add a "Show All" option to the filter section. This will allow users to clear all filters and see all tracking data at once.
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -114,6 +115,7 @@ This repository contains code to track shipments from Depot to Nike Clients
             display: block;
             color: #333;
             font-size: 14px;
+            cursor: pointer;
         }
         .dropdown-item:hover {
             background-color: #f1f5f9;
@@ -155,6 +157,10 @@ This repository contains code to track shipments from Depot to Nike Clients
             margin-left: 4px;
             color: #0369a1;
             font-weight: bold;
+        }
+        .details-modal {
+            max-height: 80vh;
+            overflow-y: auto;
         }
     </style>
 </head>
@@ -280,8 +286,8 @@ This repository contains code to track shipments from Depot to Nike Clients
                                 </svg>
                             </button>
                             <div id="exportDropdown" class="dropdown-menu">
-                                <a href="#" id="exportCsvBtn" class="dropdown-item">Export as CSV</a>
-                                <a href="#" id="exportXlsxBtn" class="dropdown-item">Export as Excel (.xlsx)</a>
+                                <div class="dropdown-item" id="exportCsvBtn">Export as CSV</div>
+                                <div class="dropdown-item" id="exportXlsxBtn">Export as Excel (.xlsx)</div>
                             </div>
                         </div>
                         <button id="clearBtn" class="bg-red-50 hover:bg-red-100 text-red-700 font-medium py-2 px-4 rounded-md transition-colors text-sm flex items-center">
@@ -305,6 +311,8 @@ This repository contains code to track shipments from Depot to Nike Clients
                                 Add Filter
                             </button>
                             <div id="filterDropdown" class="dropdown-menu">
+                                <div class="dropdown-item" data-filter="show-all">Show All (Clear Filters)</div>
+                                <div class="dropdown-divider"></div>
                                 <div class="dropdown-item" data-filter="status-delivered">Show Only Delivered</div>
                                 <div class="dropdown-item" data-filter="status-not-delivered">Hide Delivered</div>
                                 <div class="dropdown-item" data-filter="status-exception">Show Only Exceptions</div>
@@ -397,6 +405,28 @@ This repository contains code to track shipments from Depot to Nike Clients
         </div>
     </div>
 
+    <!-- Details Modal -->
+    <div id="detailsModal" class="modal">
+        <div class="modal-content details-modal">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold">Tracking Details</h3>
+                <button id="closeDetailsModal" class="text-gray-500 hover:text-gray-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div id="detailsContent" class="mb-4">
+                <!-- Details will be populated here -->
+            </div>
+            <div class="flex justify-end">
+                <button id="closeDetailsBtn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-md transition-colors text-sm">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Confirm Clear Modal -->
     <div id="clearModal" class="modal">
         <div class="modal-content">
@@ -422,6 +452,59 @@ This repository contains code to track shipments from Depot to Nike Clients
         </div>
     </div>
 
+    <!-- Confirm Delete Modal -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold">Remove Tracking Item</h3>
+                <button id="closeDeleteModal" class="text-gray-500 hover:text-gray-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div class="mb-6">
+                <p class="text-gray-700">Are you sure you want to remove tracking for <span id="deleteTicketNumber" class="font-semibold"></span>?</p>
+            </div>
+            <div class="flex justify-end space-x-3">
+                <button id="cancelDeleteBtn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-md transition-colors text-sm">
+                    Cancel
+                </button>
+                <button id="confirmDeleteBtn" class="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-md transition-colors text-sm" data-id="">
+                    Remove
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Error Modal -->
+    <div id="importErrorModal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold">Import Error</h3>
+                <button id="closeImportErrorModal" class="text-gray-500 hover:text-gray-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div class="mb-6">
+                <p id="importErrorMessage" class="text-gray-700">There was an error importing your data.</p>
+                <div class="mt-4 p-3 bg-gray-50 rounded-md text-sm text-gray-600 max-h-40 overflow-y-auto">
+                    <p id="importErrorDetails"></p>
+                </div>
+            </div>
+            <div class="flex justify-end">
+                <button id="closeImportErrorBtn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-md transition-colors text-sm">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden Download Iframe -->
+    <iframe id="downloadFrame" style="display:none;"></iframe>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // DOM Elements
@@ -446,6 +529,7 @@ This repository contains code to track shipments from Depot to Nike Clients
             const lastUpdatedEl = document.getElementById('lastUpdated');
             const trackingCountEl = document.getElementById('trackingCount');
             const sortHeaders = document.querySelectorAll('.sort-header');
+            const downloadFrame = document.getElementById('downloadFrame');
             
             // Copy modal elements
             const copyModal = document.getElementById('copyModal');
@@ -453,11 +537,31 @@ This repository contains code to track shipments from Depot to Nike Clients
             const modalCopyBtn = document.getElementById('modalCopyBtn');
             const closeModal = document.getElementById('closeModal');
             
+            // Details modal elements
+            const detailsModal = document.getElementById('detailsModal');
+            const detailsContent = document.getElementById('detailsContent');
+            const closeDetailsModal = document.getElementById('closeDetailsModal');
+            const closeDetailsBtn = document.getElementById('closeDetailsBtn');
+            
             // Clear modal elements
             const clearModal = document.getElementById('clearModal');
             const closeClearModal = document.getElementById('closeClearModal');
             const cancelClearBtn = document.getElementById('cancelClearBtn');
             const confirmClearBtn = document.getElementById('confirmClearBtn');
+            
+            // Delete modal elements
+            const deleteModal = document.getElementById('deleteModal');
+            const deleteTicketNumber = document.getElementById('deleteTicketNumber');
+            const closeDeleteModal = document.getElementById('closeDeleteModal');
+            const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+            const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+            
+            // Import error modal elements
+            const importErrorModal = document.getElementById('importErrorModal');
+            const importErrorMessage = document.getElementById('importErrorMessage');
+            const importErrorDetails = document.getElementById('importErrorDetails');
+            const closeImportErrorModal = document.getElementById('closeImportErrorModal');
+            const closeImportErrorBtn = document.getElementById('closeImportErrorBtn');
             
             // State variables
             let trackingData = [];
@@ -498,8 +602,7 @@ This repository contains code to track shipments from Depot to Nike Clients
             });
 
             // Export to CSV
-            exportCsvBtn.addEventListener('click', function(e) {
-                e.preventDefault();
+            exportCsvBtn.addEventListener('click', function() {
                 if (trackingData.length === 0) {
                     showToast('No data to export');
                     return;
@@ -507,8 +610,8 @@ This repository contains code to track shipments from Depot to Nike Clients
                 
                 try {
                     const csvContent = convertToCSV(trackingData);
-                    downloadFile(csvContent, 'fedex_tracking_data.csv', 'text/csv');
-                    showToast('Data exported to CSV');
+                    downloadFile(csvContent, 'fedex_tracking_data.csv', 'text/csv;charset=utf-8;');
+                    showToast('CSV file downloaded');
                 } catch (error) {
                     console.error('Error exporting to CSV:', error);
                     showToast('Error exporting data: ' + error.message);
@@ -518,8 +621,7 @@ This repository contains code to track shipments from Depot to Nike Clients
             });
 
             // Export to XLSX
-            exportXlsxBtn.addEventListener('click', function(e) {
-                e.preventDefault();
+            exportXlsxBtn.addEventListener('click', function() {
                 if (trackingData.length === 0) {
                     showToast('No data to export');
                     return;
@@ -527,7 +629,7 @@ This repository contains code to track shipments from Depot to Nike Clients
                 
                 try {
                     exportToExcel(trackingData, 'fedex_tracking_data.xlsx');
-                    showToast('Data exported to Excel');
+                    showToast('Excel file downloaded');
                 } catch (error) {
                     console.error('Error exporting to Excel:', error);
                     showToast('Error exporting data: ' + error.message);
@@ -548,10 +650,29 @@ This repository contains code to track shipments from Depot to Nike Clients
             filterDropdown.addEventListener('click', function(e) {
                 if (e.target.classList.contains('dropdown-item')) {
                     const filterType = e.target.getAttribute('data-filter');
-                    applyFilter(filterType);
+                    
+                    // Special handling for "Show All" option
+                    if (filterType === 'show-all') {
+                        clearAllFilters();
+                    } else {
+                        applyFilter(filterType);
+                    }
+                    
                     filterDropdown.classList.remove('show');
                 }
             });
+
+            // Clear all filters
+            function clearAllFilters() {
+                activeFiltersList = [];
+                currentSortField = null;
+                currentSortDirection = null;
+                updateActiveFiltersDisplay();
+                updateSortIcons();
+                updateTrackingDisplay();
+                saveFiltersToLocalStorage();
+                showToast('All filters cleared');
+            }
 
             // Sort headers click event
             sortHeaders.forEach(header => {
@@ -592,34 +713,91 @@ This repository contains code to track shipments from Depot to Nike Clients
                     try {
                         const data = new Uint8Array(e.target.result);
                         const workbook = XLSX.read(data, { type: 'array' });
+                        
+                        if (!workbook || !workbook.SheetNames || workbook.SheetNames.length === 0) {
+                            throw new Error("No sheets found in the Excel file");
+                        }
+                        
                         const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
                         
+                        if (!firstSheet) {
+                            throw new Error("First sheet is empty or invalid");
+                        }
+                        
                         // More robust column handling
-                        const jsonData = XLSX.utils.sheet_to_json(firstSheet, { defval: "" });
+                        const jsonData = XLSX.utils.sheet_to_json(firstSheet, { 
+                            defval: "",
+                            raw: false, // Convert all data to strings
+                            header: "A" // Use Excel column headers if headers are missing
+                        });
                         
                         if (jsonData.length === 0) {
-                            showToast('No data found in the Excel file');
-                            return;
+                            throw new Error("No data found in the Excel file");
+                        }
+
+                        // Check if we have headers or need to infer them
+                        const firstRow = jsonData[0];
+                        const hasHeaders = checkIfHasHeaders(firstRow);
+                        
+                        // If no headers, create them
+                        let processedData = jsonData;
+                        if (!hasHeaders) {
+                            // Assume first three columns are Ticket, Outbound, Inbound
+                            processedData = jsonData.map(row => {
+                                const keys = Object.keys(row).sort();
+                                const newRow = {};
+                                if (keys.length >= 1) newRow["Ticket Number"] = row[keys[0]];
+                                if (keys.length >= 2) newRow["Outbound Tracking"] = row[keys[1]];
+                                if (keys.length >= 3) newRow["Inbound Tracking"] = row[keys[2]];
+                                return newRow;
+                            });
                         }
 
                         // Process the data
-                        processTrackingData(jsonData, append);
+                        processTrackingData(processedData, append);
                         
                         // Clear the file input for next use
                         fileInput.value = '';
                         
                     } catch (error) {
                         console.error('Error processing Excel file:', error);
-                        showToast('Error processing Excel file: ' + error.message);
+                        showImportError('Error processing Excel file', error.message);
                     }
                 };
                 
                 reader.onerror = function() {
-                    showToast('Error reading the file');
+                    showImportError('File Read Error', 'Could not read the file. Please try again with a different file.');
                 };
                 
                 reader.readAsArrayBuffer(file);
             }
+
+            // Check if data has proper headers
+            function checkIfHasHeaders(firstRow) {
+                if (!firstRow) return false;
+                
+                const keys = Object.keys(firstRow);
+                // Check if any key contains words like ticket, tracking, etc.
+                return keys.some(key => 
+                    /ticket|id|number|track|inbound|outbound|in|out/i.test(key)
+                );
+            }
+
+            // Show import error modal
+            function showImportError(message, details) {
+                importErrorMessage.textContent = message;
+                importErrorDetails.textContent = details || 'No additional details available.';
+                importErrorModal.style.display = 'block';
+            }
+
+            // Close import error modal
+            closeImportErrorModal.addEventListener('click', function() {
+                importErrorModal.style.display = 'none';
+            });
+            
+            closeImportErrorBtn.addEventListener('click', function() {
+                importErrorModal.style.display = 'none';
+            });
 
             // Load sample data
             loadSampleBtn.addEventListener('click', function() {
@@ -714,13 +892,54 @@ This repository contains code to track shipments from Depot to Nike Clients
                 showToast('Text copied to clipboard');
             });
             
+            // Close details modal
+            closeDetailsModal.addEventListener('click', function() {
+                detailsModal.style.display = 'none';
+            });
+            
+            // Close details button
+            closeDetailsBtn.addEventListener('click', function() {
+                detailsModal.style.display = 'none';
+            });
+            
+            // Close delete modal
+            closeDeleteModal.addEventListener('click', function() {
+                deleteModal.style.display = 'none';
+            });
+            
+            // Cancel delete
+            cancelDeleteBtn.addEventListener('click', function() {
+                deleteModal.style.display = 'none';
+            });
+            
+            // Confirm delete
+            confirmDeleteBtn.addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                if (id) {
+                    trackingData = trackingData.filter(i => i.id !== id);
+                    saveToLocalStorage();
+                    updateTrackingDisplay();
+                    showToast('Tracking item removed');
+                    deleteModal.style.display = 'none';
+                }
+            });
+            
             // Close modals when clicking outside
             window.addEventListener('click', function(event) {
                 if (event.target === copyModal) {
                     copyModal.style.display = 'none';
                 }
+                if (event.target === detailsModal) {
+                    detailsModal.style.display = 'none';
+                }
                 if (event.target === clearModal) {
                     clearModal.style.display = 'none';
+                }
+                if (event.target === deleteModal) {
+                    deleteModal.style.display = 'none';
+                }
+                if (event.target === importErrorModal) {
+                    importErrorModal.style.display = 'none';
                 }
             });
 
@@ -786,13 +1005,23 @@ This repository contains code to track shipments from Depot to Nike Clients
 
             // Find key in object by pattern
             function findKeyByPattern(obj, patterns) {
+                if (!obj) return '';
+                
                 const keys = Object.keys(obj);
+                if (keys.length === 0) return '';
+                
                 for (const pattern of patterns) {
                     const matchingKey = keys.find(key => 
-                        key.toLowerCase().includes(pattern.toLowerCase()));
+                        String(key).toLowerCase().includes(pattern.toLowerCase()));
                     if (matchingKey) return matchingKey;
                 }
-                return keys[0]; // Return first key as fallback
+                
+                // If no match found, use positional fallback
+                if (patterns[0] === 'ticket') return keys[0]; // First column is ticket
+                if (patterns[0] === 'outbound') return keys.length > 1 ? keys[1] : keys[0]; // Second column is outbound
+                if (patterns[0] === 'inbound') return keys.length > 2 ? keys[2] : ''; // Third column is inbound
+                
+                return keys[0]; // Default to first key
             }
 
             // Update tracking statuses (simulated FedEx API call)
@@ -1136,7 +1365,7 @@ This repository contains code to track shipments from Depot to Nike Clients
                     btn.addEventListener('click', function() {
                         const id = this.getAttribute('data-id');
                         const item = trackingData.find(i => i.id === id);
-                        alert(`Tracking Details for ${item.ticketNumber}:\n\nOutbound (${item.outboundTracking}):\n${item.outboundStatus?.details || 'No details available'}\n\n${item.inboundTracking ? `Inbound (${item.inboundTracking}):\n${item.inboundStatus?.details || 'No details available'}` : ''}`);
+                        showDetailsModal(item);
                     });
                 });
                 
@@ -1145,12 +1374,7 @@ This repository contains code to track shipments from Depot to Nike Clients
                     btn.addEventListener('click', function() {
                         const id = this.getAttribute('data-id');
                         const item = trackingData.find(i => i.id === id);
-                        if (confirm(`Are you sure you want to remove tracking for ticket ${item.ticketNumber}?`)) {
-                            trackingData = trackingData.filter(i => i.id !== id);
-                            saveToLocalStorage();
-                            updateTrackingDisplay();
-                            showToast('Tracking item removed');
-                        }
+                        showDeleteConfirmation(item);
                     });
                 });
                 
@@ -1166,6 +1390,57 @@ This repository contains code to track shipments from Depot to Nike Clients
                         this.querySelector('.tooltiptext').style.opacity = '0';
                     });
                 });
+            }
+
+            // Show details modal
+            function showDetailsModal(item) {
+                // Format the details content
+                let detailsHTML = `
+                    <div class="bg-gray-50 p-4 rounded-lg mb-4">
+                        <h4 class="font-semibold text-lg mb-2">Ticket: ${item.ticketNumber}</h4>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <p class="text-sm font-medium text-gray-700">Outbound Tracking:</p>
+                                <p class="text-sm text-blue-600">${item.outboundTracking}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-700">Inbound Tracking:</p>
+                                <p class="text-sm text-blue-600">${item.inboundTracking || 'N/A'}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h4 class="font-semibold mb-2">Outbound Status: <span class="px-2 py-1 text-xs rounded-full inline-block ${getStatusClass(item.outboundStatus?.status)}">${item.outboundStatus?.status || 'Unknown'}</span></h4>
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                            <pre class="text-sm whitespace-pre-wrap">${item.outboundStatus?.details || 'No details available'}</pre>
+                        </div>
+                    </div>
+                    
+                    ${item.inboundTracking ? `
+                    <div class="mb-4">
+                        <h4 class="font-semibold mb-2">Inbound Status: <span class="px-2 py-1 text-xs rounded-full inline-block ${getStatusClass(item.inboundStatus?.status)}">${item.inboundStatus?.status || 'Unknown'}</span></h4>
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                            <pre class="text-sm whitespace-pre-wrap">${item.inboundStatus?.details || 'No details available'}</pre>
+                        </div>
+                    </div>
+                    ` : ''}
+                    
+                    <div class="text-sm text-gray-500 mt-4">
+                        Last updated: ${item.lastUpdated || 'Never'}
+                    </div>
+                `;
+                
+                // Set the content and show the modal
+                detailsContent.innerHTML = detailsHTML;
+                detailsModal.style.display = 'block';
+            }
+            
+            // Show delete confirmation
+            function showDeleteConfirmation(item) {
+                deleteTicketNumber.textContent = item.ticketNumber;
+                confirmDeleteBtn.setAttribute('data-id', item.id);
+                deleteModal.style.display = 'block';
             }
 
             // Copy to clipboard with fallback
@@ -1277,140 +1552,84 @@ This repository contains code to track shipments from Depot to Nike Clients
                 ).join('\n');
             }
 
-            // Download file (CSV or other)
-            function downloadFile(content, filename, mimeType) {
-                // Create a Blob with the data and MIME type
-                const blob = new Blob([content], { type: mimeType });
-                
-                // Create a download link
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.download = filename;
-                
-                // Append to the document, click it, and remove it
-                document.body.appendChild(link);
-                link.click();
-                
-                // Clean up
-                setTimeout(() => {
-                    URL.revokeObjectURL(link.href);
-                    document.body.removeChild(link);
-                }, 100);
-            }
-
-            // Export to Excel
-            function exportToExcel(data, filename) {
-                // Prepare the data for Excel
-                const excelData = [
-                    ['Ticket Number', 'Outbound Tracking', 'Outbound Status', 'Inbound Tracking', 'Inbound Status', 'Last Updated']
-                ];
-                
-                data.forEach(item => {
-                    excelData.push([
-                        item.ticketNumber || '',
-                        item.outboundTracking || '',
-                        item.outboundStatus?.status || 'N/A',
-                        item.inboundTracking || 'N/A',
-                        item.inboundStatus?.status || 'N/A',
-                        item.lastUpdated || 'Never'
-                    ]);
-                });
-                
-                // Create a new workbook
-                const wb = XLSX.utils.book_new();
-                const ws = XLSX.utils.aoa_to_sheet(excelData);
-                
-                // Add the worksheet to the workbook
-                XLSX.utils.book_append_sheet(wb, ws, 'Tracking Data');
-                
-                // Generate the Excel file and trigger download
-                XLSX.writeFile(wb, filename);
-            }
-
-            // Save data to localStorage
-            function saveToLocalStorage() {
+            // Download file using multiple methods
+            function downloadFile(content, fileName, mimeType) {
+                // Method 1: Using Blob and createObjectURL
                 try {
-                    localStorage.setItem('fedexTrackingData', JSON.stringify(trackingData));
-                    localStorage.setItem('fedexLastUpdated', lastUpdatedEl.textContent);
-                    saveFiltersToLocalStorage();
-                } catch (error) {
-                    console.error('Error saving to localStorage:', error);
-                    showToast('Error saving data to browser storage');
+                    const blob = new Blob([content], { type: mimeType });
+                    const url = window.URL.createObjectURL(blob);
+                    
+                    const link = document.createElement('a');
+                    document.body.appendChild(link); // Append to body first
+                    link.style.display = 'none';
+                    link.href = url;
+                    link.download = fileName;
+                    link.click();
+                    
+                    // Clean up
+                    setTimeout(() => {
+                        document.body.removeChild(link);
+                        window.URL.revokeObjectURL(url);
+                    }, 100);
+                    
+                    return true;
+                } catch (err1) {
+                    console.error("Method 1 failed:", err1);
+                    // Continue to next method
                 }
+                
+                // Method 2: Using Data URI
+                try {
+                    const dataUri = 'data:' + mimeType + ',' + encodeURIComponent(content);
+                    const link = document.createElement('a');
+                    document.body.appendChild(link); // Append to body first
+                    link.style.display = 'none';
+                    link.href = dataUri;
+                    link.download = fileName;
+                    link.click();
+                    
+                    // Clean up
+                    setTimeout(() => {
+                        document.body.removeChild(link);
+                    }, 100);
+                    
+                    return true;
+                } catch (err2) {
+                    console.error("Method 2 failed:", err2);
+                    // Continue to next method
+                }
+                
+                // Method 3: Using window.open
+                try {
+                    const dataUri = 'data:' + mimeType + ',' + encodeURIComponent(content);
+                    const newWindow = window.open(dataUri);
+                    
+                    if (!newWindow) {
+                        throw new Error("Popup blocked");
+                    }
+                    
+                    newWindow.document.title = fileName;
+                    showToast('File opened in new tab. Please save it manually.');
+                    
+                    return true;
+                } catch (err3) {
+                    console.error("Method 3 failed:", err3);
+                }
+                
+                // Method 4: Show content in a modal for manual copy
+                showManualDownloadModal(content, fileName);
+                return false;
             }
             
-            // Save filters to localStorage
-            function saveFiltersToLocalStorage() {
-                try {
-                    localStorage.setItem('fedexFilters', JSON.stringify(activeFiltersList));
-                    localStorage.setItem('fedexSort', JSON.stringify({
-                        field: currentSortField,
-                        direction: currentSortDirection
-                    }));
-                } catch (error) {
-                    console.error('Error saving filters to localStorage:', error);
-                }
-            }
-
-            // Load data from localStorage
-            function loadFromLocalStorage() {
-                try {
-                    const savedData = localStorage.getItem('fedexTrackingData');
-                    const savedLastUpdated = localStorage.getItem('fedexLastUpdated');
-                    const savedFilters = localStorage.getItem('fedexFilters');
-                    const savedSort = localStorage.getItem('fedexSort');
-                    
-                    if (savedData) {
-                        trackingData = JSON.parse(savedData);
-                        
-                        // Ensure all items have IDs (for backward compatibility)
-                        trackingData.forEach(item => {
-                            if (!item.id) {
-                                item.id = Date.now() + Math.random().toString(36).substr(2, 9);
-                            }
-                        });
-                        
-                        resultsSection.classList.remove('hidden');
-                    }
-                    
-                    if (savedLastUpdated) {
-                        lastUpdatedEl.textContent = savedLastUpdated;
-                    }
-                    
-                    // Load filters
-                    if (savedFilters) {
-                        activeFiltersList = JSON.parse(savedFilters);
-                        updateActiveFiltersDisplay();
-                    }
-                    
-                    // Load sort settings
-                    if (savedSort) {
-                        const sortSettings = JSON.parse(savedSort);
-                        currentSortField = sortSettings.field;
-                        currentSortDirection = sortSettings.direction;
-                        updateSortIcons();
-                    }
-                    
-                    if (trackingData.length > 0) {
-                        applyFiltersAndSort();
-                        updateTrackingDisplay();
-                    }
-                } catch (error) {
-                    console.error('Error loading from localStorage:', error);
-                    showToast('Error loading saved data');
-                }
-            }
-
-            // Show toast notification
-            function showToast(message) {
-                toastMessage.textContent = message;
-                toast.classList.remove('translate-y-20', 'opacity-0');
-                
-                setTimeout(() => {
-                    toast.classList.add('translate-y-20', 'opacity-0');
-                }, 3000);
-            }
-        });
-    </script>
-</body>
-</html>
+            // Show manual download modal
+            function showManualDownloadModal(content, fileName) {
+                // Create a modal with the content for manual copy
+                const modal = document.createElement('div');
+                modal.style.position = 'fixed';
+                modal.style.top = '0';
+                modal.style.left = '0';
+                modal.style.width = '100%';
+                modal.style.height = '100%';
+                modal.style.backgroundColor = 'rgba(0,0,0,0.5)';
+                modal.style.zIndex = '1000';
+                modal.style.```
