@@ -1,6 +1,181 @@
 # ServiceNow_Fedex_Tracker
 This repository contains code to track shipments from Depot to Nike Clients
 
+    
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FedEx Tracking Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        .fedex-purple {
+            background-color: #4d148c;
+        }
+        .fedex-orange {
+            background-color: #ff6600;
+        }
+        .status-delivered {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+        .status-transit {
+            background-color: #e0f2fe;
+            color: #0369a1;
+        }
+        .status-pending {
+            background-color: #fef9c3;
+            color: #854d0e;
+        }
+        .status-exception {
+            background-color: #fee2e2;
+            color: #b91c1c;
+        }
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 140px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 150%;
+            left: 50%;
+            margin-left: -75px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #555 transparent transparent transparent;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 50;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 8px;
+        }
+        .highlight-row {
+            animation: highlight 2s ease-in-out;
+        }
+        @keyframes highlight {
+            0% { background-color: #fef3c7; }
+            100% { background-color: transparent; }
+        }
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            background-color: white;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+            border-radius: 4px;
+            right: 0;
+        }
+        .dropdown-menu.show {
+            display: block;
+        }
+        .dropdown-item {
+            padding: 8px 12px;
+            text-decoration: none;
+            display: block;
+            color: #333;
+            font-size: 14px;
+        }
+        .dropdown-item:hover {
+            background-color: #f1f5f9;
+        }
+        .dropdown-divider {
+            height: 1px;
+            margin: 4px 0;
+            background-color: #e2e8f0;
+        }
+        .sort-icon {
+            display: inline-block;
+            width: 0;
+            height: 0;
+            margin-left: 4px;
+            vertical-align: middle;
+        }
+        .sort-asc {
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-bottom: 4px solid currentColor;
+        }
+        .sort-desc {
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-top: 4px solid currentColor;
+        }
+        .filter-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 8px;
+            background-color: #e0f2fe;
+            color: #0369a1;
+            border-radius: 9999px;
+            font-size: 12px;
+            margin-right: 4px;
+            margin-bottom: 4px;
+        }
+        .filter-badge button {
+            margin-left: 4px;
+            color: #0369a1;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="fedex-purple text-white p-4 shadow-md">
+            <div class="container mx-auto flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <svg class="w-8 h-8" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M0 25H12.5V37.5H25V25H37.5V12.5H25V0H12.5V12.5H0V25Z" fill="#FF6600"/>
+                        <path d="M25 25H37.5V37.5H50V25H37.5V12.5H50V0H37.5V12.5H25V25Z" fill="#FF6600"/>
+                    </svg>
+                    <h1 class="text-xl font-bold">FedEx Tracking Dashboard</h1>
+                </div>
+                <div class="text-sm">
+                    <span id="lastUpdated" class="opacity-75">Last updated: Never</span>
+                </div>
+            </div>
+        </header>
+
         <!-- Main Content -->
         <main class="container mx-auto flex-grow p-4 md:p-6">
             <!-- Import Section -->
@@ -1239,6 +1414,3 @@ This repository contains code to track shipments from Depot to Nike Clients
     </script>
 </body>
 </html>
-
-
-
