@@ -169,3 +169,9 @@ This project highlights practical Data / Business Analyst adjacent skills:
 * Chart summaries and KPI widgets
 * Backend persistence layer
 
+---
+
+## 📜 License
+
+This project is for academic and educational use. Add a formal license if distributing publicly.
+
