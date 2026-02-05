@@ -173,7 +173,7 @@ This project highlights practical Data / Business Analyst adjacent skills:
 
 ## 👤 Author
 
-Sreya Kambhatla
-Data Analyst | Business Analyst
+Sreya Kambhatla<br>
+Data Analyst | Business Analyst<br>
 SQL • Python • Power BI • Analytics Engineering
 
