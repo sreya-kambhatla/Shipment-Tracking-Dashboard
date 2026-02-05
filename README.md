@@ -169,11 +169,3 @@ This project highlights practical Data / Business Analyst adjacent skills:
 * Chart summaries and KPI widgets
 * Backend persistence layer
 
----
-
-## 👤 Author
-
-Sreya Kambhatla<br>
-Data Analyst | Business Analyst<br>
-SQL • Python • Power BI • Analytics Engineering
-
