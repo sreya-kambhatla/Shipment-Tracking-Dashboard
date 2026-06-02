@@ -2,7 +2,7 @@
 
 A client-side shipment tracking dashboard that turns Excel exports into a live, filterable, and exportable tracking view — no backend required. Built for operational and support teams who manage FedEx outbound and inbound shipments from spreadsheets.
 
-**[Live Demo →](https://sreya-kambhatla.github.io/shipment-tracking-dashboard/)**
+**[Live Demo →](https://sreya-kambhatla.github.io/Shipment-Tracking-Dashboard/)**
 
 ---
 
